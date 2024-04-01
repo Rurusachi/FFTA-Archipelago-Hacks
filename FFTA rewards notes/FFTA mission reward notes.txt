@@ -1,0 +1,57 @@
+By Rurusachi
+
+080cffd8: Loads item reward 1 into memory
+080d0084: Loads item reward 2 into memory
+080d0110: Loads card reward 1 into memory
+080d013a: Loads card reward 2 into memory
+
+
+
+080d011c: card reward is compared to FF instead of FFFF like items
+080d0146: Same, but reward 2
+
+03002850: mission data is stored temporarily
+	(item1: +08 +09)
+	(item2: +0a +0b)
+	(item1: +0c +0d)
+	(item1: +0e +0f)
+
+
+03005f04: Loads item rewards 1 and 2, then stores them at 020021d0. Loops to store card rewards as well
+	(loop starts at 020021c8?)
+	
+	
+pub mission list starts at 020021c8
+mission 1 rewards start at 020021d0 (020021c8 + 08)
+
+
+
+0804600c: loads mission clear item reward 1 (Then jumps to (forgot to write this down))
+
+0804609c: loads mission clear item reward 2 (Then jumps to 080460b0)
+080460b0: Give player the item in r4 as normal or mission item (Used for second item)
+
+08046120: Compares r0 to 0. If true, no card rewards. Change to NOP to always get cards (Probably checking if the Mission "Antilaws" is cleared)
+08046128: loads mission clear card reward 1 (Then jumps to 08046140)
+08046140: Give player the item in r4 as law card (Used for first card)
+
+0804617a: loads mission clear card reward 2 (Then jumps to 0804618c)
+0804618c: Give player the item in r4 as law card (Used for second card, functionally the same(?))
+
+
+080c956e (Don't remember why I wrote this down, keeping in case it was something relevant)
+
+
+(Don't remember what these mean)
+if item 1 real go to 08046074
+if item 2 real go to 080460f4
+
+(Don't remember what these mean)
+7b39
+7b78
+0204
+430c
+
+
+Decided to place my code at 08b30500
+

@@ -1,0 +1,23 @@
+#ifndef FreeSpace
+	#define FreeSpace 0x00b30400
+    #define PointerSpace 0x00b305f8
+    #define Intercept1  0x0004600c
+    #define Intercept2  0x00046128
+    #define Intercept3  0x0004617a
+    #define CardCheck  0x00046122
+#endif
+
+ORG Intercept1
+#inctext lyn "intercept.elf" "definitions_random.elf"
+
+ORG Intercept2
+#inctext lyn "intercept.elf" "definitions_random.elf"
+
+ORG Intercept3
+#inctext lyn "intercept.elf" "definitions_random.elf"
+
+ORG CardCheck
+SHORT 0x46c0
+
+ORG FreeSpace
+#inctext lyn "progressive_random.elf" "definitions_random.elf"

@@ -1,0 +1,269 @@
+By Rurusachi
+
+Idea:
+	Part 1:
+		The highest item id is around 500. This includes mission items, but not law cards.
+		There are about 200 law cards. They are stored separately from the normal items.
+		We can put any item into any rewards slot by adding an offset to law card ids so law card 0x01 becomes 0x201.
+			When reading the item id, if it is above 0x200, we sutract 0x200 and jump to law card reward code. 
+			Otherwise we jump to normal item reward code
+		This puts the highest item id around 700.
+	
+	Part 2:
+		Every mission has room for 4 rewards. With the above idea they can be any combination of item types.
+		Each item id uses 2 bytes, giving us 8 bytes of memory to store them in.
+		With 2 bytes the highest number we can store is 65535 (0xFFFF).
+		The highest id we have is only around 700. That's a lot of unused number space.
+		We can write up to 1023 ids with just 10 bits. This means every item id has 6 unused bits
+		8 bytes of memory gives us 64 bits. That gives us room for 6 items with 4 bits left over.
+		We can align this so that items 1-3 fit in the first 4bytes, and 2-6 in the last 4 bytes.
+		We leave the last 2 bits in bytes 4 and 8 unused. (See "Item packing.png")
+		
+Item 1 = byte1[0:8] + byte2[0:2]
+Item 2 = byte2[2:8] + byte3[0:4]
+Item 3 = byte3[4:8] + byte4[0:6]
+
+Item 4 = byte5[0:8] + byte6[0:2]
+Item 5 = byte6[2:8] + byte7[0:4]
+Item 6 = byte7[4:8] + byte8[0:6]
+
+
+Pseudocode:
+# Treating bytes as arrays of bits, least significant bits first (i.e. [1,0,0,0] = 0x1)
+# Extend(byte1, byte2) concatenates arrays (i.e. extend([0,1,0,0], [0,0,0,1]) = extend(0x2, 0x8) = [0,1,0,0,0,0,0,1] = 0x82)
+	items = [byte1, byte2, byte3, byte4, byte5, byte6, byte7, byte8]
+	itembyte1 = read(items[0])
+	itembyte2 = read(items[1])
+
+	item_id = extend(itembyte1, itembyte2[0:2])
+	remainder = extend([0,0], itembyte2[2:8])
+	write(items[0], 0x00)
+	write(items[1], remainder)
+	if item_id != 00:
+		get_item(item_id)
+	else:
+		itembyte1 = read(items[1])
+		itembyte2 = read(items[2])
+		
+		item_id = extend(itembyte1[2:8], itembyte2[0:4])
+		remainder = extend([0,0], itembyte2[4:8])
+		write(items[0], 0x00)
+		write(items[1], remainder)
+		if item_id != 00:
+			get_item(item_id)
+		else:
+			itembyte1 = read(items[2])
+			itembyte2 = read(items[3])
+			
+			item_id = extend(itembyte1[4:8], itembyte2[0:6])
+			remainder = extend([0,0], itembyte2[4:8])
+			write(items[0], 0x00)
+			write(items[1], 0x00)
+			if item_id != 00:
+				get_item(item_id)
+			else:
+				itembyte1 = read(items[4])
+				itembyte2 = read(items[5])
+
+				item_id = extend(itembyte1, itembyte2[0:2])
+				remainder = extend([0,0], itembyte2[2:8])
+				write(items[0], 0x00)
+				write(items[1], remainder)
+				if item_id != 00:
+					get_item(item_id)
+				else:
+					itembyte1 = read(items[5])
+					itembyte2 = read(items[6])
+					
+					item_id = extend(itembyte1[2:8], itembyte2[0:4])
+					remainder = extend([0,0], itembyte2[4:8])
+					write(items[0], 0x00)
+					write(items[1], remainder)
+					if item_id != 00:
+						get_item(item_id)
+					else:
+						itembyte1 = read(items[6])
+						itembyte2 = read(items[7])
+						
+						item_id = extend(itembyte1[4:8], itembyte2[0:6])
+						remainder = extend([0,0], itembyte2[4:8])
+						write(items[0], 0x00)
+						write(items[1], 0x00)
+						if item_id != 00:
+							get_item(item_id)
+						else:
+							all_items_received()
+	
+	all_items_received()
+		goto 0804618c (get card 2 code, with id 0x00 (no reward), does not lead back to this code)
+	
+
+	get_item(item_id):
+		if item_id > 0x200:
+			item_id = item_id - 0x200
+			goto 08046140 (get card 1 code, leads back to top of this code)
+		else
+			goto 080460b0 (get item 2 code, leads back to top of this code)
+
+
+Example of packing the item ids together:
+item 1: 1e (Ayvuir Red)
+item 2: 1f (Ayvuir Blue)
+item 3: 10e (Genji helmet)
+item 4: 129 (Dragon Mail)
+item 5: 15a (Fairy Shoes)
+item 6: 160 (Genji Armlets)
+
+
+items 1-3: 10 e0 7c 1e
+items 4-6: 16 05 69 29
+
+Explanation:
+	Item 3 is shifted left by 20 bits, item 2 by 10 bits.
+	bitwise or them together to get the 4 byte value that represents all 3 items.
+		(X << Y means shift X left by Y bits)
+		0x10e << 20 = 0x10E00000
+		0x1f << 10 = 0x7C00
+		0x1e << 0 = 0x1e
+		0x10E00000 OR 0x7C00 OR 0x1e = 10e07c1e
+
+Example 2:
+item 1: 213 (card: Summon)
+item 2: 20a (card: Time Magic)
+item 3: 10e (Genji helmet)
+
+item 4: 129 (Dragon Mail)
+item 5: 15a (Fairy Shoes)
+item 6: 160 (Genji Armlets)
+
+items 1-3: 10 e8 2a 13
+items 4-6: 16 05 69 29
+
+
+
+Assembly code (placed at 08b30500, unless otherwise noted):
+
+# 0804600c (Intercept item 1 code)
+ldr r0, [r15, 0] (Directly after next instruction)
+mov r15, r0
+# Pointer to "Begin 6 item version" here
+
+# 08046128 (Intercept card 1 code, which is end of item 2 code)
+ldr r0, [r15, 0] (Directly after next instruction)
+mov r15, r0
+# Pointer to "Begin 6 item version" here
+
+# 0804617a (Intercept card 2 code, which is end of card 1 code)
+ldr r0, [r15, 4] (Can only load 4 bytes at once at certain alignments, 0 would include next instruction)
+mov r15, r0
+
+# Pointer to "Begin 6 item version" here (Gap intentional due to alignment)
+
+
+
+#Begin 6 item version (08b30500)
+# Item 1 
+ldrb r1, [r7, 08h]
+ldrb r0, [r7, 09h]
+lsl r4, r0, 1eh
+lsr r4, r4, 16h
+orr r4, r1
+mov r1, 0h
+strb r1, [r7, 08h]
+lsr r1, r0, 2h
+lsl r1, r1, 2h
+strb r1, [r7, 09h]
+cmp r4, 0h
+bne #Item_not_received
+
+#Item 2
+ldrb r1, [r7, 09h]
+ldrb r0, [r7, 0ah]
+lsr r1, r1, 2h
+lsl r4, r0, 1ch
+lsr r4, r4, 16h
+orr r4, r1
+mov r1, 0h
+strb r1, [r7, 09h]
+lsr r1, r0, 4h
+lsl r1, r1, 4h
+strb r1, [r7, 0ah]
+cmp r4, 0h
+bne #Item_not_received
+
+#Item 3
+ldrb r1, [r7, 0ah]
+ldrb r0, [r7, 0bh]
+lsr r1, r1, 4h
+lsl r4, r0, 1ah
+lsr r4, r4, 16h
+orr r4, r1
+mov r1, 0h
+strb r1, [r7, 0ah]
+strb r1, [r7, 0bh]
+cmp r4, 0h
+bne #Item_not_received
+
+#Item 4
+ldrb r1, [r7, 0ch]
+ldrb r0, [r7, 0dh]
+lsl r4, r0, 1eh
+lsr r4, r4, 16h
+orr r4, r1
+mov r1, 0h
+strb r1, [r7, 0ch]
+lsr r1, r0, 2h
+lsl r1, r1, 2h
+strb r1, [r7, 0dh]
+cmp r4, 0h
+bne #Item_not_received
+
+#Item 5
+ldrb r1, [r7, 0dh]
+ldrb r0, [r7, 0eh]
+lsr r1, r1, 2h
+lsl r4, r0, 1ch
+lsr r4, r4, 16h
+orr r4, r1
+mov r1, 0h
+strb r1, [r7, 0dh]
+lsr r1, r0, 4h
+lsl r1, r1, 4h
+strb r1, [r7, 0eh]
+cmp r4, 0h
+bne #Item_not_received
+
+#Item 6
+ldrb r1, [r7, 0eh]
+ldrb r0, [r7, 0fh]
+lsr r1, r1, 4h
+lsl r4, r0, 1ah
+lsr r4, r4, 16h
+orr r4, r1
+mov r1, 0h
+strb r1, [r7, 0eh]
+strb r1, [r7, 0fh]
+cmp r4, 0h
+bne #Item_not_received
+
+#Items_received
+ldr r0, [r15, 64] (load 0804618c)
+mov r15, r0
+
+#Item_not_received (08b30594)
+mov r0, 2h
+lsl r0, r0, 8h (start law cards at 512 (x0200))
+cmp r4, r0
+bhi #Card_reward
+ldr r0, [r15, 5c] (load 080460b0)
+mov r15, r0
+
+#Card_reward (08b305a0)
+sub r4, r4, r0
+ldr r0, [r15, 5c] (load 08046140)
+mov r15, r0
+
+#Pointers (08b305f8)
+0804618c
+080460b0
+08046140

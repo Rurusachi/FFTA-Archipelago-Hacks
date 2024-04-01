@@ -1,0 +1,58 @@
+By Rurusachi
+
+pseudocode:
+	item = read(card1_address)
+	if item != 00:
+		write(card1_address, 00)
+		goto item 2 code
+	else
+		item = read(card2_address)
+		if item != 00:
+			write(card2_address, 00)
+			goto item 2 code
+	else
+		continue normal code
+
+Assembly code (placed at 08b30500, unless otherwise noted):
+
+# 08046122 (NOP to skip card unlock requirement)
+NOP
+
+# 08046128 (Intercept normal card reward code)
+ldr r0, [r15, 0]
+mov r15, r0
+# Pointer to "Begin 4 item version here"
+
+#Begin 4 item version (08b30500)
+ldrb r1, [r7, 0ch]
+ldrb r0, [r7, 0dh]
+lsl r4, r0, 8h
+orr r4, r1
+mov r0, 0h
+strb r0, [r7, 0ch]
+strb r0, [r7, 0dh]
+cmp r4, 0h
+bne #Item_not_received
+
+#Item1_received
+ldrb r1, [r7, 0eh]
+ldrb r0, [r7, 0fh]
+lsl r4, r0, 8h
+orr r4, r1
+mov r0, 0h
+strb r0, [r7, 0eh]
+strb r0, [r7, 0fh]
+cmp r4, 0h
+bne #Item_not_received
+
+#Item2_received
+ldr r0, [r15, 18] (load 08046140)
+mov r15, r0
+
+#Item_not_received
+ldr r0, [r15, 18] (load 080460b0)
+mov r15, r0
+
+#Pointers (08b30540)
+08046140
+080460b0
