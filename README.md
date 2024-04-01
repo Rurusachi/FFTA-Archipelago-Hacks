@@ -13,4 +13,4 @@ The "progressive random" hack is based on the "6 reward" version.
 4. Download [Lyn](https://github.com/StanHash/lyn), and place it in Event Assembler's Tools folder
 5. (Optional, if you want to change the code) Download [DevkitArm](https://devkitpro.org/wiki/Getting_Started)
 6. (Optional, if the code was changed) Assemble the ".s" files into ".elf" files with "Assemble elf.bat"
-7. Run the following command from Event Assembler's folder: Core A FE8" -input:"path/to/progressive_random.event" -output:"path/to/FFTA_hack.gba" (This overwrites the .gba file)
+7. Run the following command from Event Assembler's folder: `Core A FE8 -input:"path/to/progressive_random.event" -output:"path/to/FFTA_hack.gba"` (This overwrites the .gba file)
