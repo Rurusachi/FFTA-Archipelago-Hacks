@@ -1,0 +1,36 @@
+#ifndef ProgressiveReward
+	#define ProgressiveReward 0x00b30400
+    #define ProgressiveShop 0x00b30800
+    #define PointerSpace 0x00b305f8
+    #define InterceptRewards1  0x0004600c
+    #define InterceptRewards2  0x00046128
+    #define InterceptRewards3  0x0004617a
+    #define InterceptShopEnd 0x00b40a36
+    #define CardCheck  0x00046122
+#endif
+
+ORG InterceptRewards1
+#inctext lyn "intercept_rewards.elf" "definitions.elf"
+
+ORG InterceptRewards2
+#inctext lyn "intercept_rewards.elf" "definitions.elf"
+
+ORG InterceptRewards3
+#inctext lyn "intercept_rewards.elf" "definitions.elf"
+
+ORG CardCheck
+SHORT 0x46c0
+
+ORG ProgressiveReward
+#inctext lyn "progressive_rewards.elf" "definitions.elf"
+
+PROTECT ProgressiveReward (ProgressiveShop-1)
+
+ORG InterceptShopEnd
+#inctext lyn "intercept_shop_end.elf" "definitions.elf"
+
+ORG ProgressiveShop
+#inctext lyn "progressive_shop.elf" "definitions.elf"
+
+ORG 0x00525B05
+#incbin shopupgrade
