@@ -3,7 +3,7 @@
 @ r6 = index, r2 = pointer to first item list
 Shop_init:
     push {r2, r6}
-    mov r6, #0x01
+    mov r6, #0x03
     ldr r2, =ShopUnlockListStart
     b Add_shop_unlocks
 
