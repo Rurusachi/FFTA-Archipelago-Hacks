@@ -143,6 +143,7 @@ Progressive_reward:
     add r0, #0xff @(Progressive shop is 0xff)
     cmp r4, r0
     beq Progressive_shop_reward
+    sub r0, #0xff
     push {r2, r3}
     sub r4, r4, r0
     ldr r1, =PathPointerStart
