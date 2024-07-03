@@ -94,20 +94,7 @@ Item_not_received:
     lsl r0, r0, #0x8 @(start progressive items at >=768 (0x300))
     cmp r4, r0
     bhs Progressive_reward
-    mov r0, #0x2
-    lsl r0, r0, #0x8 @(start law cards at >512 (0x200))
-    cmp r4, r0
-    bhi Card_reward
-    b Item_reward
-
-Item_reward:
-    ldr r0, =ItemReward
-    mov r15, r0
-
-Card_reward:
-    sub r4, r4, r0
-    ldr r0, =CardReward
-    mov r15, r0
+    b Process_reward
 
 Progressive_shop_reward:
     ldr r1, =ProgressiveShopLevel
@@ -137,7 +124,7 @@ Progressive_shop_increment:
 
 Progressive_shop_cleanup:
     ldrh r4, =ShopUpgradeTempItem
-    b Item_reward @ no item to reward
+    b Process_reward @ no item to reward
 
 Progressive_reward:
     add r0, #0xff @(Progressive shop is 0xff)
@@ -202,6 +189,12 @@ Initialize_seed:
     ldr r3, =xorshift
     bx r3
 
+@ r0 modulo r1
+Bios_modulo:
+    swi #0x06 @ Bios div function. After: r0 = (r0 div r1), r1 = (r0 mod r1), r3 = (ABS (r0 div r1))
+    add r4, r1, #1 @ Item id in r4
+    b Cleanup_and_return
+
 .arm
 
 xorshift:
@@ -211,19 +204,7 @@ xorshift:
     eor r3, r3, r3, lsr #17
     eor r0, r3, r3, lsl #5 @ Next state is in r0
     str r0, [r2]
-    b modulo
-
-@ r0 modulo 0x169
-modulo:
-    ldr     r3, =MagicModuloNumber @ Magic number
-    umull   r2, r3, r0, r3
-    sub     r2, r0, r3
-    add     r3, r3, r2, lsr #1
-    lsr     r3, r3, #8
-    add     r2, r3, r3, lsl #1
-    rsb     r2, r2, r2, lsl #4
-    add     r3, r3, r2, lsl #3
-    sub     r0, r0, r3
-    add r4, r0, #1 @ Item id in r4
-    ldr r3, =(Cleanup_and_return+1)
+    @b modulo
+    ldr r1, =#0x169 @ modulo
+    ldr r3, =(Bios_modulo+1)
     bx r3

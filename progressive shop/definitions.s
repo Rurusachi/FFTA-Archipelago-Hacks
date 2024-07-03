@@ -4,14 +4,14 @@
 	.set    \name, \value
 .endm
 
-SET_FUNC Begin_progressive, (0x08b30400+1)
-SET_FUNC EndRoutine, (0x0804618c+1)
-SET_FUNC ItemReward, (0x080460b0+1)
-SET_FUNC CardReward, (0x08046140+1)
-SET_FUNC Shop_init, (0x08b30800+1)
+@ Progressive rewards
 
-.global MagicModuloNumber
-.set  MagicModuloNumber, 1796509867
+SET_FUNC Begin_progressive, (0x08b30400+1)
+SET_FUNC EndRoutine, (0x080461c0+1)
+
+SET_FUNC Process_reward, (0x08b30800+1)
+SET_FUNC Give_item, (0x08038858+1)
+SET_FUNC Write_item, (0x08037a30+1)
 
 .global ProgressiveCounter
 .set    ProgressiveCounter, 0x02002AF2 @ Seems to be unused memory space, we use 4 bytes (0x02002AF2 - 0x02002AF5)
@@ -40,6 +40,18 @@ SET_FUNC Shop_init, (0x08b30800+1)
 
 @ Progressive shop
 
+.global Shop_loop_condition
+.set Shop_loop_condition, 0x080cbea4
+
+.global Shop_end
+.set Shop_end, 0x080cbf20
+
+.global ShopLoopConditionSuccess
+.set ShopLoopConditionSuccess, 0x080cbe38
+
+.global ShopLoopConditionFail
+.set ShopLoopConditionFail, 0x080cbe92
+
 .global ProgressiveShopLevel
 .set    ProgressiveShopLevel, 0x02002AF7
 
@@ -47,22 +59,16 @@ SET_FUNC Shop_init, (0x08b30800+1)
 .set    NumberOfBattles, 0x02001F6C
 
 .global ShopTierAmount
-.set    ShopTierAmount, 0x08b30900
+.set    ShopTierAmount, 0x08b30950
 
-.global ShopUnlockListStart
-.set    ShopUnlockListStart, 0x08b30904
+.global BattleNumConditionFlag
+.set    BattleNumConditionFlag, 0x08b30951
 
-@ Each tier of upgrades is a sequence of 2 byte item ids. 0000 marks the end of a sequence.
-@ There is a 2 byte buffer between tiers.
-@ ShopUnlockListStart is the address of the first item id in the first sequence.
-@ Example where XXXX, YYYY, ZZZZ, AAAA, BBBB, CCCC are item ids, and FFFF is buffer:
-@ XXXX YYYY ZZZZ 0000 FFFF AAAA BBBB CCCC 
+.global ShopUnlockList
+.set    ShopUnlockList, (0x08b30954-1) @ Index starts at 1
 
-.global checkEquippedamount
-.set 	checkEquippedamount, 0x08b406dc
-
-.global newItemTabs
-.set 	newItemTabs, 0x08b405a4
+@ ShopUnlockList lists which tier each item becomes available at. Since item ids start at 1 the list also starts at index 1.
+@ BattleNumConditionFlag enables unlocking the first 2 upgrades by fighting battles, but this does not count towards further upgrades.
 
 .global ShopUpgradeTempItem
 .set ShopUpgradeTempItem, 0x01bd
