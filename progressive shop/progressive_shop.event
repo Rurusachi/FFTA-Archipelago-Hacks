@@ -2,11 +2,13 @@
 	#define ProgressiveReward 0x00b30400
     #define ProgressiveShop 0x000cbea4
     #define ProcessReward 0x00b30800
-    #define InterceptRewards1  0x0004600c
-    #define InterceptRewards2  0x00046128
-    #define InterceptRewards3  0x0004617a
+    #define InterceptRewards1 0x0004600c
+    #define InterceptRewards2 0x00046128
+    #define InterceptRewards3 0x0004617a
     #define InterceptShopLoopCondition 0x000cbe28
     #define InterceptShopLoopEnd 0x000cbea0
+    #define ShopUnlockList 0x00b30954
+    #define BattleNumConditionFlag 0x00b30951
 #endif
 
 PROTECT 0x00b30600 (0x00b30800-1)
@@ -40,3 +42,6 @@ ORG ProcessReward
 
 ORG 0x00525B05
 #incbin shopupgrade
+
+#include "item_shop_tiers.event"
+#include "item_shop_prices.event"
