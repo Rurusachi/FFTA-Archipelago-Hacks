@@ -6,28 +6,36 @@ Shop_loop_condition:
     ldrb r0, [r0, r7]
     cmp r0, #0
     beq ShopLoopConditionFail
+    push {r2} @ Unsure if r2 is used later, saving just in case. Offsets shop tier flag from 0x0c to 0x10
     ldr r1, =BattleNumConditionFlag
     ldrb r1, [r1]
     cmp r1, #1
-    beq Battle_num_flag
-Shop_tier_condition:
+    bge Battle_num_flag
+Shop_tier_level_only:
+    mov r2, #1
+Shop_tier_level:
     ldr r1, =ProgressiveShopLevel
     ldrb r1, [r1]
-    add r1, #1
+    add r1, r2
     cmp r1, r0
+Shop_tier_end:
+    pop {r2} @ Should not affect flags
     bge ShopLoopConditionSuccess
     b ShopLoopConditionFail
 
 Battle_num_flag:
-    ldr r1, [sp, #0xc] @ Shop tier bit flag, 0x10 = 1, 0x20 = 2, 0x40 = 3
-    lsr r1, #4
-    cmp r1, #4
+    ldr r2, [sp, #0x10] @ Shop tier bit flag, 0x10 = 1, 0x20 = 2, 0x40 = 3
+    lsr r2, #4
+    cmp r2, #4
     beq Battle_flag_fix
 Battle_num_condition:
+    cmp r1, #2
+    bge Shop_tier_level @ Stacking with upgrades
+    mov r1, r2
     cmp r1, r0
-    bge ShopLoopConditionSuccess
-    b Shop_tier_condition
+    bge Shop_tier_end
+    b Shop_tier_level_only
 
 Battle_flag_fix:
-    sub r1, #1
+    sub r2, #1
     b Battle_num_condition

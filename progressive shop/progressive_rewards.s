@@ -97,29 +97,17 @@ Item_not_received:
     b Process_reward
 
 Progressive_shop_reward:
-    ldr r1, =ProgressiveShopLevel
-    ldrb r0, [r1]
+    ldr r4, =ProgressiveShopLevel
+    ldrb r0, [r4]
     ldr r1, =ShopTierAmount
     ldrb r1, [r1]
-    cmp r0, #0x02
-    blo Shop_level_1_and_2
     cmp r0, r1
     blo Progressive_shop_increment
     b Progressive_shop_cleanup
 
-Shop_level_1_and_2:
-    push {r2}
-    ldr r2, =NumberOfBattles
-    ldrb r4, [r2]
-    add r4, #0xA
-    strb r4, [r2]
-    pop {r2}
-    b Progressive_shop_increment
-
 Progressive_shop_increment:
-    ldr r1, =ProgressiveShopLevel
     add r0, #0x01
-    strb r0, [r1]
+    strb r0, [r4]
     b Progressive_shop_cleanup
 
 Progressive_shop_cleanup:
