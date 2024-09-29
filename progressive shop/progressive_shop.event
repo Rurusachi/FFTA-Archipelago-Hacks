@@ -1,14 +1,20 @@
 #ifndef ProgressiveReward
 	#define ProgressiveReward 0x00b30400
-    #define ProgressiveShop 0x000cbea4
     #define ProcessReward 0x00b30800
     #define InterceptRewards1 0x0004600c
     #define InterceptRewards2 0x00046128
     #define InterceptRewards3 0x0004617a
+
+    #define ProgressiveShop 0x000cbea4
     #define InterceptShopLoopCondition 0x000cbe28
     #define InterceptShopLoopEnd 0x000cbea0
     #define ShopUnlockList 0x00b30954
     #define BattleNumConditionFlag 0x00b30951
+    
+    #define InterceptReceiveItem 0x00039f68
+    #define InterceptReceiveItemGive 0x0003a5f0
+    #define ReceiveItem 0x00b30B00
+    #define ReceiveItemGive 0x00b30C00
 #endif
 
 PROTECT 0x00b30600 (0x00b30800-1)
@@ -39,6 +45,22 @@ ORG ProgressiveShop
 
 ORG ProcessReward
 #inctext lyn "process_rewards.elf" "definitions.elf"
+
+
+ORG InterceptReceiveItem
+#inctext lyn "intercept_receive.elf" "definitions.elf"
+
+ORG InterceptReceiveItemGive
+#inctext lyn "intercept_receive_give.elf" "definitions.elf"
+
+
+ORG ReceiveItem
+#inctext lyn "receive_item.elf" "definitions.elf"
+
+PROTECT ReceiveItem (ReceiveItemGive-1)
+
+ORG ReceiveItemGive
+#inctext lyn "receive_item_give.elf" "definitions.elf"
 
 ORG 0x00525B05
 #incbin shopupgrade

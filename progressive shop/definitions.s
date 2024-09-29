@@ -72,3 +72,22 @@ SET_FUNC Write_item, (0x08037a30+1)
 
 .global ShopUpgradeTempItem
 .set ShopUpgradeTempItem, 0x01bd
+
+
+@ Receive Items
+
+.global Receive_items
+.set Receive_items, 0x08b30B00 @ Intercept point: 0x08039f68(start of mission item handling)
+
+.global Receive_mission_item
+.set Receive_mission_item, 0x08039f70
+
+.global Receive_items_after
+.set Receive_items_after, 0x08039fc0
+
+
+.global Receive_items_give
+.set Receive_items_give, 0x08b30C00 @ Intercept point: 0x0803a5f0
+
+.global Receive_items_give_after
+.set Receive_items_give_after, 0x0803a624
