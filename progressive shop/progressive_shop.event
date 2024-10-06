@@ -1,69 +1,103 @@
-#ifndef ProgressiveReward
-	#define ProgressiveReward 0x00b30400
-    #define ProcessReward 0x00b30800
+#ifndef MissionReward
     #define InterceptRewards1 0x0004600c
     #define InterceptRewards2 0x00046128
     #define InterceptRewards3 0x0004617a
-
-    #define ProgressiveShop 0x000cbea4
+    
     #define InterceptShopLoopCondition 0x000cbe28
     #define InterceptShopLoopEnd 0x000cbea0
+
+    #define InterceptReceiveNextItem 0x0003a540
+    #define InterceptReceiveItemWrite 0x00039ef0
+    #define InterceptReceiveItemGive 0x0003a5f0
+
+	#define MissionReward 0x00b30400
+    #define ProcessReward 0x00b30800
+    #define ShouldGive 0x00b30C00
+    #define ReceiveItemWrite 0x00b30D00
+    #define ReceiveItemGive 0x00b30E00
+	#define ProgressiveItem 0x00b30F00
+
+    #define ProgressiveShop 0x000cbea4
     #define ShopUnlockList 0x00b30954
     #define BattleNumConditionFlag 0x00b30951
-    
-    #define InterceptReceiveItem 0x00039f68
-    #define InterceptReceiveItemGive 0x0003a5f0
-    #define ReceiveItem 0x00b30B00
-    #define ReceiveItemGive 0x00b30C00
 #endif
 
 PROTECT 0x00b30600 (0x00b30800-1)
 
+
+#include "item_shop_tiers.event"
+#include "item_shop_prices.event"
+
 ORG InterceptRewards1
 #inctext lyn "intercept_rewards.elf" "definitions.elf"
-
 ORG InterceptRewards2
 #inctext lyn "intercept_rewards.elf" "definitions.elf"
-
 ORG InterceptRewards3
 #inctext lyn "intercept_rewards.elf" "definitions.elf"
 
-ORG ProgressiveReward
-#inctext lyn "progressive_rewards.elf" "definitions.elf"
-
-PROTECT ProgressiveReward (ProcessReward-1)
 
 ORG InterceptShopLoopCondition
 #inctext lyn "intercept_shop_loop.elf" "definitions.elf"
-
 ORG InterceptShopLoopEnd
 #inctext lyn "intercept_shop_end.elf" "definitions.elf"
 
-PROTECT 0x000cbf20 0x000cbf30
-ORG ProgressiveShop
-#inctext lyn "progressive_shop.elf" "definitions.elf"
 
-ORG ProcessReward
-#inctext lyn "process_rewards.elf" "definitions.elf"
-
-
-ORG InterceptReceiveItem
-#inctext lyn "intercept_receive.elf" "definitions.elf"
-
+ORG InterceptReceiveItemWrite
+#inctext lyn "intercept_receive_write.elf" "definitions.elf"
 ORG InterceptReceiveItemGive
 #inctext lyn "intercept_receive_give.elf" "definitions.elf"
 
 
-ORG ReceiveItem
-#inctext lyn "receive_item.elf" "definitions.elf"
+ORG MissionReward
+#inctext lyn "mission_rewards.elf" "definitions.elf"
+MESSAGE CURRENTOFFSET
+PROTECT MissionReward CURRENTOFFSET
 
-PROTECT ReceiveItem (ReceiveItemGive-1)
+ORG ProcessReward
+#inctext lyn "process_reward.elf" "definitions.elf"
+MESSAGE CURRENTOFFSET
+PROTECT ProcessReward CURRENTOFFSET
+
+ORG ShouldGive
+#inctext lyn "should_give.elf" "definitions.elf"
+MESSAGE CURRENTOFFSET
+PROTECT ShouldGive CURRENTOFFSET
+
+ORG 0x0003a52c
+BYTE 0xA // Delay before skippable
+ORG 0x0003a538
+BYTE 0x3 // Skip button: 01=A, 02=B, 03=(A or B)
+ORG 0x0003a532
+BYTE 0x1 // Hold to skip: 01=On, 41=Off
+
+ORG InterceptReceiveNextItem
+PROTECT 0x0003a55c (0x0003a55c+1)
+#inctext lyn "intercept_receive_next.elf" "definitions.elf"
+
+ORG ReceiveItemWrite
+#inctext lyn "Receive_item_write.elf" "definitions.elf"
+MESSAGE CURRENTOFFSET
+PROTECT ReceiveItemWrite CURRENTOFFSET
 
 ORG ReceiveItemGive
 #inctext lyn "receive_item_give.elf" "definitions.elf"
+MESSAGE CURRENTOFFSET
+PROTECT ReceiveItemGive CURRENTOFFSET
+
+ORG ProgressiveItem
+#inctext lyn "progressive_item.elf" "definitions.elf"
+MESSAGE CURRENTOFFSET
+PROTECT ProgressiveItem CURRENTOFFSET
+
+
+
+PROTECT 0x000cbf20 0x000cbf30
+ORG ProgressiveShop
+#inctext lyn "progressive_shop.elf" "definitions.elf"
+MESSAGE CURRENTOFFSET
+PROTECT ProgressiveShop CURRENTOFFSET
+
+
 
 ORG 0x00525B05
 #incbin shopupgrade
-
-#include "item_shop_tiers.event"
-#include "item_shop_prices.event"

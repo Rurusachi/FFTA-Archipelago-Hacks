@@ -1,18 +1,44 @@
 .thumb
 
-Receive_items:
+Receive_item_write:
+    @ Progressive items
+    mov r0, #0x3
+    lsl r0, r0, #0x8 @(start progressive items at >=768 (0x300))
+    cmp r10, r0
+    bhs Progressive_reward
+
     mov r0, #0x2
     lsl r0, r0, #0x8 @(start law cards at >512 (0x200))
     cmp r10, r0
     bhi Card_item_reward
-    b Mission_item_reward
+    
+    ldr r0, =#0x177
+    cmp r10, r0
+    bhi Mission_item_reward
+    b Normal_item_reward
+
+Progressive_reward:
+    mov r0, r10
+    bl Progressive_Item
+    mov r10, r0
+    @ Write to memory address
+    ldr r1, =Receive_item_offset
+    ldr r1, [r1, #0x0]
+    lsl r1, r1, #0x1
+    ldr r2, =Receive_item_address
+    add r1, r2, r1
+    strh r0, [r1, #0x0]
+
+    b Receive_item_write
+
+Normal_item_reward:
+    ldr r1, =#0x0851D180
+    mov r2, r10
+    ldr r0, =Receive_write_normal_item
+    mov r15, r0
 
 Mission_item_reward:
-    mov r1, r10
-    lsl r0, r1, #0x4
-    ldr r1, =#0x0851FAA4
-    add r1, r0, r1
-    ldr r0, =Receive_mission_item
+    ldr r0, =Receive_write_mission_item
     mov r15, r0
 
 @ If r10 < 0x56: image_id = 0x189
@@ -84,13 +110,13 @@ get_image_pointer:
     add r0, r0, r2
     lsr r0, r0, #0x10
     mov r8, r0
-    b Cleanup
+    b cleanup
 
 
-Cleanup:
+cleanup:
     @ Pop and return
     pop {r0, r1}
     mov r10, r0
     mov lr, r1
-    ldr r0, =Receive_items_after
+    ldr r0, =Receive_item_write_after
     mov r15, r0
