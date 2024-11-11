@@ -1,0 +1,148 @@
+Gdb setup:
+set architecture arm
+set arm fallback-mode thumb
+set arm force-mode thumb
+target remote localhost:2345
+
+
+06007a42 = Upper left corner of rewards box
+
+
+
+FFTA rewards handling:
+	FUN_08045df4(undefined4 param_1,uint param_2,short param_3)
+		param_1: Pointer to mission data
+		param_2: ??
+		param_3: ??
+		
+	
+	
+
+	FUN_08037a30(int param_1,undefined4 param_2,int param_3,int param_4,uint param_5,undefined4 param_6,
+            int param_7,int param_8)
+		param_1: 5 (?)
+		param_2: 0600afe0 (?)
+		param_3: 0xc (XCoord)
+		param_4: rewards_num * 2 (YCoord)
+		param_5: item id
+		param_6: 0
+		param_7: 1 (item type, 0 = Equipment, 1 = Mission, 2 = Card)
+		param_8: 0
+		param_9(?): 0
+		
+		if (param_8 == 0) {
+			YCoord = param_4 + 2;
+		} else {
+			if (param_8 == 1) {
+				YCoord = param_4 + 1;
+				XCoord = param_3;
+				goto LAB_08037a8c;
+			}
+			YCoord = param_4 + 1;
+		}
+		XCoord = param_3 + 1;
+		
+		LAB_08037a8c:
+		FUN_0808b8e4(5, 1, XCoord, YCoord)
+
+
+	FUN_0808b8e4(int param_1,int param_2,int param_3,int param_4):
+		param_1: 5 (can be 4 or 5?)
+		param_2: 1
+		param_3: X coordinate (relative?)
+		param_4: Y coordinate (relative?)
+	
+	Something at 20173a8
+	
+	if param_2 != 0:
+		*(030009fc + param_1 * 0x4c)
+		((param_4 * 2) * 1c) * 2 + 020173c2 (?)
+	else:
+		??
+
+
+FUN_080cb980 = Set item icon?
+FUN_080cb99c = ????
+FUN_08038cf0 = Set item name?
+FUN_08015110 = Write item name?
+
+
+
+name_id = *(ushort *)(&DAT_0851d180 + item_id * 0x20);
+FUN_080cb980(&DAT_02003cb0, item_id);
+FUN_bios_cpuSet((undefined *)&DAT_02003cb0,&DAT_0600afe0 + uVar4 * 0x40,0x40);
+name_pointer = (&PTR_DAT_08526680)[name_id];
+image_pointer = FUN_080cb99c(item_id);
+
+
+if (item_id < 0x56) {
+    image_id = 0x189;
+}
+else {
+    item_id = item_id + 0xffab & 0xffff;
+    image_id = 0x18a;
+}
+name_id = item_id + 0x271
+FUN_080cb980(&DAT_02003cb0,image_id);
+FUN_bios_cpuSet((undefined *)&DAT_02003cb0,dest_address,0x40);
+image_pointer = FUN_080cb99c(image_id);
+uVar7 = (ushort)((uint)(image_pointer * 0x10000000 + -0x30000000) >> 0x10);
+name_pointer = (&PTR_DAT_08526680)[name_id];
+
+
+
+Call FUN_080cb980 with image_id
+
+
+
+
+
+
+Generalized:
+	switch(item_type) {
+		case 0:
+			image_id = item_id
+			name_id = *(ushort *)(&DAT_0851d180 + item_id * 0x20);
+		case 1:
+			name_id = item_id + 0x7b
+			if ((&DAT_0851faa6)[item_id * 0x10] == '\0') {
+      			image_id = 0;
+    		} else {
+      			image_id = (byte)(&DAT_0851faa6)[item_id * 0x10] + 0x18a;
+    		}
+		case 2:
+			if (item_id < 0x56) {
+    			image_id = 0x189;
+			} else {
+    			item_id = item_id + 0xffab & 0xffff;
+    			image_id = 0x18a;
+			}
+			name_id = item_id + 0x271
+	}
+	FUN_080cb980(&DAT_02003cb0,image_id);
+	FUN_bios_cpuSet((undefined *)&DAT_02003cb0,dest_address,0x40);
+	name_pointer = (&PTR_DAT_08526680)[name_id];
+	image_pointer = FUN_080cb99c(image_id);
+
+
+
+mission:
+FUN_080cb980(&DAT_02003cb0,image_id);
+FUN_bios_cpuSet((undefined *)&DAT_02003cb0,&DAT_0600afe0 + uVar4 * 0x40,0x40);
+name_pointer = (&PTR_DAT_08526680)[param_1 + 0x7b];
+image_pointer = FUN_080cb99c(image_id);
+
+
+
+card:
+if (item_id < 0x56) {
+    image_id = 0x189;
+} else {
+    item_id = item_id + 0xffab & 0xffff;
+    image_id = 0x18a;
+}
+
+FUN_080cb980(&DAT_02003cb0,image_id);
+FUN_bios_cpuSet((undefined *)&DAT_02003cb0,dest_address,0x40);
+name_pointer = (&PTR_DAT_08526680)[item_id + 0x271];
+image_pointer = FUN_080cb99c(image_id);
