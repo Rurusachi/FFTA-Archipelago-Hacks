@@ -1,6 +1,7 @@
 .thumb
 
 Process_reward:
+    push {lr}
     mov r0, #0x2
     lsl r0, r0, #0x8 @(start law cards at >512 (0x200))
     cmp r4, r0
@@ -35,7 +36,6 @@ Write_only:
     ldr r0, =#0x177
     sub r4, r4, r0
     mov r1, #1
-    push {lr}
     sub sp, #0x14
     str r1, [sp, #0x8] @ store item type for later
     b Set_coords
@@ -43,7 +43,6 @@ Write_only:
 @ Give_item(item_id, item_type, 1?)
 @ item_type: 0 = normal, 1 = mission, 2 = law card
 Call_give_item:
-    push {lr}
     sub sp, #0x14
     str r1, [sp, #0x8] @ store item type for later
     ldr r0, =Give_item

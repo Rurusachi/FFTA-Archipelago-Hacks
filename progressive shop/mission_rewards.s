@@ -1,6 +1,7 @@
 .thumb
 
 Mission_rewards:
+    push {lr}
     @ item_1 
     ldrb r1, [r7, #0x08]
     ldrb r0, [r7, #0x09]
@@ -86,6 +87,8 @@ Item_6:
     bne Item_not_received
 
 Items_received:
+    pop {r1}
+    mov lr, r1
     ldr r0, =EndRoutine
     mov r15, r0
 
@@ -94,6 +97,8 @@ Item_not_received:
     lsl r0, r0, #0x8 @(start progressive items at >=768 (0x300))
     cmp r4, r0
     bhs Progressive_reward
+    pop {r1}
+    mov lr, r1
     b Process_reward
 
 Progressive_reward:

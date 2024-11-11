@@ -1,6 +1,8 @@
 .thumb
 
 Receive_item_write:
+    push {lr}
+After_progressive:
     @ Progressive items
     mov r0, #0x3
     lsl r0, r0, #0x8 @(start progressive items at >=768 (0x300))
@@ -12,6 +14,8 @@ Receive_item_write:
     cmp r10, r0
     bhi Card_item_reward
     
+    pop {r1}
+    mov lr, r1
     ldr r0, =#0x177
     cmp r10, r0
     bhi Mission_item_reward
@@ -29,7 +33,7 @@ Progressive_reward:
     add r1, r2, r1
     strh r0, [r1, #0x0]
 
-    b Receive_item_write
+    b After_progressive
 
 Normal_item_reward:
     ldr r1, =#0x0851D180
@@ -44,9 +48,9 @@ Mission_item_reward:
 @ If r10 < 0x56: image_id = 0x189
 @ else: image_id = 0x18a and item_id = 
 Card_item_reward:
-    @ Put image_id in r4
+    @ Put image_id in r1
     mov r1, r10
-    push {r1, lr} @ Push id and r5
+    push {r1} @ Push id
     sub r0, r1, r0 @ r0 = item_id - 200 (law card id)
     mov r10, r0
     cmp r0, #0x56
@@ -115,7 +119,8 @@ get_image_pointer:
 
 cleanup:
     @ Pop and return
-    pop {r0, r1}
+    pop {r0}
+    pop {r1}
     mov r10, r0
     mov lr, r1
     ldr r0, =Receive_item_write_after

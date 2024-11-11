@@ -4,7 +4,7 @@
 @ Returns item_id
 @ Sets flags in memory
 Progressive_item:
-    push {r4}
+    push {r4, lr}
     mov r4, r0
     mov r0, #0x3
     lsl r0, r0, #0x8 @(start progressive items at >=768 (0x300))
@@ -35,7 +35,9 @@ Progressive_item:
 
 Return:
     mov r0, r4
-    pop {r4}
+    pop {r1, r4} @ Can't pop into lr
+    mov lr, r4
+    mov r4, r1
     bx lr
 
 Progressive_shop_reward:

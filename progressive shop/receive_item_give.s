@@ -1,6 +1,7 @@
 .thumb
 
 Receive_item_give:
+    push {lr}
     ldr r0, =#0x0201F46C
     lsl r1, r4, #0x1
     add r1, r1, r0
@@ -37,14 +38,13 @@ Card_item_reward:
     b Call_give_item
 
 Call_give_item:
-    push {lr}
     mov r2, #0x1
     ldr r3, =Give_item
     mov lr, r3
     .short 0xF800 @ bl lr
-    pop {r3}
-    mov lr, r3
 
 Cleanup:
+    pop {r3}
+    mov lr, r3
     ldr r3, =Receive_items_give_after
     mov r15, r3
