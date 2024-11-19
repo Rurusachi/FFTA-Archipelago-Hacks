@@ -9,6 +9,7 @@
     #define InterceptReceiveNextItem 0x0003a540
     #define InterceptReceiveItemWrite 0x00039ef0
     #define InterceptReceiveItemGive 0x0003a5f0
+    #define DisableTreasureHunt 0x0003a4ec
 
 	#define MissionReward 0x00b30400
     #define ProcessReward 0x00b30800
@@ -73,6 +74,9 @@ BYTE 0x1 // Hold to skip: 01=On, 41=Off
 ORG InterceptReceiveNextItem
 PROTECT 0x0003a55c (0x0003a55c+1)
 #inctext lyn "intercept_receive_next.elf" "definitions.elf"
+
+ORG DisableTreasureHunt
+#inctext lyn "disable_treasure_hunt.elf" "definitions.elf"
 
 ORG ReceiveItemWrite
 #inctext lyn "Receive_item_write.elf" "definitions.elf"
